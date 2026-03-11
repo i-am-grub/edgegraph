@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import types
 from edgegraph.structure import base, vertex
+from edgegraph.collections.sorted_set import SortedSet
 
 if TYPE_CHECKING:
     Vertex = vertex.Vertex
@@ -209,7 +210,7 @@ class Universe(vertex.Vertex):
         self._laws.applies_to = self
 
         #: Internal set of vertices
-        self._vertices: list[Vertex] = []
+        self._vertices: SortedSet[Vertex] = SortedSet()
         if vertices is not None:
             for v in vertices:
                 self.add_vertex(v)
@@ -250,7 +251,7 @@ class Universe(vertex.Vertex):
         if vert in self._vertices:
             return
 
-        self._vertices.append(vert)
+        self._vertices.add(vert)
         if self not in vert.universes:
             vert.add_to_universe(self)
 

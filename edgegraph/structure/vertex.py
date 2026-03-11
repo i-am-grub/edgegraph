@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 from collections.abc import Iterator
 from edgegraph.structure import base
+from edgegraph.collections.sorted_set import SortedSet
 
 if TYPE_CHECKING:
     from edgegraph.structure.link import Link
@@ -104,7 +105,7 @@ class Vertex(base.BaseObject):
         #:
         #: This is a list of links that include this vertex as one of the
         #: linked vertices.
-        self._links: list[Link] = []
+        self._links: SortedSet[Link] = SortedSet()
         if links is not None:
             for link in links:
                 self.add_to_link(link)
@@ -219,7 +220,7 @@ class Vertex(base.BaseObject):
         :param link: the link to add this vertex to
         """
         if link not in self._links:
-            self._links.append(link)
+            self._links.add(link)
             if self not in link.vertices:
                 link.add_vertex(self)
 
