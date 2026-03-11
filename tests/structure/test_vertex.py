@@ -6,6 +6,7 @@ Unit tests for structure.vertex.Vertex class.
 """
 
 from edgegraph.structure import base, vertex, universe, link
+from edgegraph.collections.sorted_set import SortedSetView
 
 # W0212 is protected-access, or, access to a protected member (starting with a
 # _) of a client class.  In this case, the test objectives require we inspect
@@ -70,7 +71,7 @@ def test_vertex_create_with_links_set():
     for obj in v2.links:
         assert obj in links, "found unexpected linkin vertex links!"
     assert len(v2.links) == len(links), "vertex links is not expected length!"
-    assert isinstance(v2.links, tuple), "vertex links is not correct type!"
+    assert isinstance(v2.links, SortedSetView), "vertex links is not correct type!"
 
 
 def test_vertex_create_with_tuple():
@@ -84,7 +85,7 @@ def test_vertex_create_with_tuple():
 
     v3 = vertex.Vertex(links=links)
     assert v3.links == links, "vertex .links did not equal expected!"
-    assert isinstance(v3.links, tuple), "vertex links is not correct type!"
+    assert isinstance(v3.links, SortedSetView), "vertex links is not correct type!"
 
 
 def test_vertex_create_with_generator():
@@ -100,7 +101,7 @@ def test_vertex_create_with_generator():
 
     v4 = vertex.Vertex(links=gen())
     assert v4.links == tuple(links), "vertex .links did not equal expected!"
-    assert isinstance(v4.links, tuple), "vertex links is not correct type!"
+    assert isinstance(v4.links, SortedSetView), "vertex links is not correct type!"
 
 
 def test_vert_add_to_uni():

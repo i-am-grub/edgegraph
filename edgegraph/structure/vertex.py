@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 from collections.abc import Iterator
 from edgegraph.structure import base
-from edgegraph.collections.sorted_set import SortedSet
+from edgegraph.collections.sorted_set import SortedSet, SortedSetView
 
 if TYPE_CHECKING:
     from edgegraph.structure.link import Link
@@ -133,14 +133,14 @@ class Vertex(base.BaseObject):
             universe.add_vertex(self)
 
     @property
-    def links(self) -> tuple[Link, ...]:
+    def links(self) -> SortedSetView[Link]:
         """
         Return a tuple of links that are attached to this object.
 
         A tuple is given specifically to prevent the addition or removal of
         link objects using this attribute; it is intended to be immutable.
         """
-        return tuple(self._links)
+        return SortedSetView(self._links)
 
     def _qa_neighbors_get(self, *args):
         """

@@ -2,9 +2,41 @@
 Sorted Set Implementation
 """
 
-from typing import TypeVar, Sequence, Iterable, Generator
+from __future__ import annotations
+
+from typing import TypeVar, Sequence, Iterable, Generator, Generic
+from collections.abc import Sized
 
 T = TypeVar("T")
+GenericAlias = type(list[int])
+
+
+class SortedSetView(Generic[T], Sized):
+    """
+    A view on the sorted set
+    """
+
+    __slots__ = ("_set",)
+
+    def __init__(self, set_: SortedSet):
+        self._set = set_
+
+    def __len__(self):
+        return len(self._set)
+
+    def __contains__(self, element):
+        return element in self._set
+
+    def __iter__(self) -> Iterable[T]:
+        yield from self._set
+
+    def __getitem__(self, index) -> T:
+        return self._set.__getitem__(index)
+    
+    def __eq__(self, value):
+        if isinstance(value, Iterable):
+            return type(value)(self) == value
+        return super().__eq__(value)
 
 
 class SortedSet(set[T], Sequence[T]):
@@ -41,8 +73,8 @@ class SortedSet(set[T], Sequence[T]):
         super().discard(element)
 
     def remove(self, element):
-        super().remove(element)
         self.list.remove(element)
+        super().remove(element)
 
     def _combined_generator(self, *s: Iterable[T]) -> Generator[T]:
         """
@@ -55,17 +87,16 @@ class SortedSet(set[T], Sequence[T]):
     def _regenerate_list(self, set_: set[T], *s: Iterable[T]) -> Generator[T]:
         """
         Filters a combined iterable generator to only include one of each key.
-        The only the first instance of each key within the generator will be 
+        The only the first instance of each key within the generator will be
         preserved in the rebuild.
 
         :param set_: A consumable set of keys
         """
         comb_list = self._combined_generator(*s)
-        for j in comb_list:
-            if j in set_:
-                set_.remove(j)
-                yield j
-
+        for i in comb_list:
+            if i in set_:
+                set_.remove(i)
+                yield i
 
     def difference(self, *s):
         new_set = super().difference(*s)
@@ -109,6 +140,14 @@ class SortedSet(set[T], Sequence[T]):
     def copy(self):
         return self.__class__(self.list)
 
+    def get_view(self) -> SortedSetView:
+        """
+        Get a view on the set
+        :return: The view
+        """
+
+        return SortedSetView(self)
+
     def __iter__(self):
         return self.list.__iter__()
 
@@ -149,3 +188,9 @@ class SortedSet(set[T], Sequence[T]):
     def __repr__(self):
         vals = [f"{key}" for key in self.list]
         return f"{{{', '.join(vals)}}}"
+
+    def __getstate__(self):
+        return self.list.__getstate__()
+
+    def __setstate__(self, state):
+        self.update(state)

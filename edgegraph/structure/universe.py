@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import types
 from edgegraph.structure import base, vertex
-from edgegraph.collections.sorted_set import SortedSet
+from edgegraph.collections.sorted_set import SortedSet, SortedSetView
 
 if TYPE_CHECKING:
     Vertex = vertex.Vertex
@@ -216,7 +216,7 @@ class Universe(vertex.Vertex):
                 self.add_vertex(v)
 
     @property
-    def vertices(self) -> list[vertex.Vertex]:
+    def vertices(self) -> SortedSetView[vertex.Vertex]:
         """
         Return a list of vertices that this universe contains.
 
@@ -231,7 +231,7 @@ class Universe(vertex.Vertex):
         :return: vertices belonging to this universe, ordered by insertion
            order.
         """
-        return list(self._vertices)
+        return self._vertices.get_view()
 
     def add_vertex(self, vert: vertex.Vertex):
         """
