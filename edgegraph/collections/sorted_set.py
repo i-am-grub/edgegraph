@@ -2,7 +2,7 @@
 Sorted Set Implementation
 """
 
-from typing import TypeVar, Sequence, Iterable
+from typing import TypeVar, Sequence, Iterable, Generator
 
 T = TypeVar("T")
 
@@ -44,71 +44,62 @@ class SortedSet(set[T], Sequence[T]):
         super().remove(element)
         self.list.remove(element)
 
-    def _combine_lists(self, *s: Iterable[T]) -> list[T]:
+    def _combined_generator(self, *s: Iterable[T]) -> Generator[T]:
         """
-        Creates a copy of the current object's list and
-        then extends it with data from other iterables
-
-        :return: The extended list
+        Yield from the current list and the additional iterables
         """
-
-        comb_list = self.list.copy()
+        yield from self.list
         for i in s:
-            comb_list.extend(i)
-        return comb_list
+            yield from i
 
-    def _rebuild_list(self, set_: set[T], *s: Iterable[T]) -> list[T]:
+    def _regenerate_list(self, set_: set[T], *s: Iterable[T]) -> Generator[T]:
         """
-        Filters an extended list to only include one of each key.
-        The only the first instance of each key within the
-        extended list will be preserved in the rebuild.
+        Filters a combined iterable generator to only include one of each key.
+        The only the first instance of each key within the generator will be 
+        preserved in the rebuild.
 
         :param set_: A consumable set of keys
-        :return: The filtered list
         """
-        comb_list = self._combine_lists(*s)
-        new_list = []
+        comb_list = self._combined_generator(*s)
         for j in comb_list:
             if j in set_:
-                new_list.append(j)
                 set_.remove(j)
+                yield j
 
-        return new_list
 
     def difference(self, *s):
         new_set = super().difference(*s)
-        return self.__class__(self._rebuild_list(new_set, *s))
+        return self.__class__(filter(lambda x: x in new_set, self.list))
 
     def difference_update(self, *s):
         super().difference_update(*s)
-        self.list[:] = list(filter(lambda x: x in self, self.list))
+        self.list[:] = filter(lambda x: x in self, self.list)
 
     def intersection(self, *s):
         new_set = super().intersection(*s)
-        return self.__class__(self._rebuild_list(new_set, *s))
+        return self.__class__(filter(lambda x: x in new_set, self.list))
 
     def intersection_update(self, *s):
         super().intersection_update(*s)
-        self.list[:] = list(filter(lambda x: x in self, self.list))
+        self.list[:] = filter(lambda x: x in self, self.list)
 
     def symmetric_difference(self, s):
         new_set = super().symmetric_difference(s)
-        comb_list = self._combine_lists(s)
+        comb_list = self._combined_generator(s)
         return self.__class__(filter(lambda x: x in new_set, comb_list))
 
     def symmetric_difference_update(self, s):
         super().symmetric_difference_update(s)
-        comb_list = self._combine_lists(s)
-        self.list[:] = list(filter(lambda x: x in self, comb_list))
+        comb_list = self._combined_generator(s)
+        self.list[:] = filter(lambda x: x in self, comb_list)
 
     def union(self, *s):
         new_set = super().union(*s)
-        comb_list = self._rebuild_list(new_set, *s)
-        return self.__class__(comb_list)
+        return self.__class__(self._regenerate_list(new_set, *s))
 
     def update(self, *s):
         super().update(*s)
-        self.list[:] = self._rebuild_list(super().copy(), *s)
+        self.list[:] = self._regenerate_list(super().copy(), *s)
 
     def pop(self, index: int = -1):
         i = self.list.pop(index)
