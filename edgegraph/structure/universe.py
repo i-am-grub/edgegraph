@@ -56,7 +56,7 @@ class Universe(vertex.Vertex):
         """
         super().__init__(uid=uid, attributes=attributes)
 
-        self._verts_lock = threading._PyRLock()
+        self._verts_lock = threading.RLock()
 
         #: Internal set of vertices
         self._vertices: list[Vertex] = []
@@ -120,3 +120,12 @@ class Universe(vertex.Vertex):
             self._vertices.remove(vert)
             if self in vert.universes:
                 vert.remove_from_universe(self)
+
+    def __getstate__(self) -> dict:
+        data = self.__dict__.copy()
+        data.pop("_verts_lock")
+        return data
+
+    def __setstate__(self, value: dict) -> None:
+        self.__dict__.update(value)
+        self.__dict__["_verts_lock"] = threading.RLock()

@@ -88,7 +88,7 @@ class BaseObject(object):
             for key, val in attributes.items():
                 setattr(self, key, val)
 
-        self._universes_lock = threading._PyRLock()
+        self._universes_lock = threading.RLock()
 
         #: Internal reference to the universes this object is a part of
         #:
